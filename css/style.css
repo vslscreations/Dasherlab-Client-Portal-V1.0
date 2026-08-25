@@ -34,6 +34,52 @@
     gap: 16px;
 }
 
+.eskodsk-resource-card {
+    display: grid;
+    gap: 16px;
+}
+
+.eskodsk-resource-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.eskodsk-resource-icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0b2f6b, #174da8);
+    color: #ffffff;
+    font-size: 1.4rem;
+    box-shadow: 0 10px 22px rgba(11, 47, 107, 0.2);
+    flex-shrink: 0;
+}
+
+.eskodsk-resource-card h2 {
+    margin: 0;
+    color: #0b2f6b;
+}
+
+.eskodsk-resource-card p {
+    margin: 0;
+    color: #4f5c6b;
+    line-height: 1.6;
+}
+
+.eskodsk-resource-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.98rem;
+    padding: 10px 18px;
+}
+
 .overview-card {
     background: #f7f9fc;
     border-radius: 16px;
@@ -1728,6 +1774,8 @@ footer {
     cursor:pointer;
     transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
     border:1px solid #edf2f8;
+    text-decoration:none;
+    color:inherit;
 
 }
 
@@ -1737,6 +1785,22 @@ footer {
     box-shadow:0 8px 18px rgba(11, 47, 107, 0.08);
 }
 
+.storefront-link {
+    color: #0b2e59;
+}
+
+.storefront-link-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.storefront-link strong,
+.storefront-link p {
+    color: inherit;
+}
 
 .action-card:first-letter {
 

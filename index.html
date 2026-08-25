@@ -169,6 +169,14 @@
 
         </div>
 
+        <a class="action-card storefront-link" href="https://vslscreations.github.io/eskodsk-storefront/" target="_blank" rel="noopener noreferrer">
+            <img src="images/IMG_4436.PNG" alt="EskoDSK storefront logo" class="storefront-link-icon" />
+            <div>
+                <strong>Explore EskoDSK Services</strong>
+                <p>Discover digital services for your business</p>
+            </div>
+        </a>
+
     </section>
 
 
@@ -220,7 +228,7 @@
 <script src="Avery/supabase.js"></script>
 <script src="js/client-auth.js"></script>
 <script>
-(function showClientAccessMessageOnHomePage() {
+function showClientAccessMessageOnHomePage() {
     const message = window.sessionStorage ? window.sessionStorage.getItem("clientAccessNotice") : null;
     if (!message) {
         return;
