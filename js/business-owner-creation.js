@@ -124,6 +124,8 @@
 
     if (!values.temporaryPassword || values.temporaryPassword.length < 8) {
       errors.push("Temporary password must be at least 8 characters long.");
+    } else if (values.temporaryPassword.length > 72) {
+      errors.push("Temporary password must be 8-72 characters long to meet Supabase Auth limits.");
     }
 
     if (values.temporaryPassword && values.confirmTemporaryPassword && values.temporaryPassword !== values.confirmTemporaryPassword) {

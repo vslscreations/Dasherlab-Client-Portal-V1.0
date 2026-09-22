@@ -30,6 +30,17 @@ const invalidClient = validateClientAccountInput({
 });
 assert.strictEqual(invalidClient.ok, false, 'invalid client payload should fail validation');
 
+const overLimitClient = validateClientAccountInput({
+  firstName: 'Jane',
+  lastName: 'Doe',
+  email: 'jane@example.com',
+  phone: '555-123-4567',
+  username: 'jane.doe',
+  temporaryPassword: 'A'.repeat(73),
+  confirmTemporaryPassword: 'A'.repeat(73)
+});
+assert.strictEqual(overLimitClient.ok, false, 'passwords over 72 characters should fail validation');
+
 const sanitized = normalizeClientAccountInput({
   firstName: ' Jane ',
   lastName: ' Doe ',

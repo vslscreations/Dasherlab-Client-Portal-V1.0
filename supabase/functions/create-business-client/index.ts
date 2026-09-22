@@ -182,6 +182,13 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (temporaryPassword.length > 72) {
+      return jsonResponse(400, {
+        ok: false,
+        message: 'Temporary password must be between 8 and 72 characters long.'
+      });
+    }
+
     if (temporaryPassword !== confirmTemporaryPassword) {
       return jsonResponse(400, {
         ok: false,
