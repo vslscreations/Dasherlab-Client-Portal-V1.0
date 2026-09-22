@@ -253,6 +253,14 @@
         };
       }
 
+      var temporaryPassword = validation.values.temporaryPassword;
+      console.log("[create-business-client diagnostic]", {
+        passwordLength: temporaryPassword && typeof temporaryPassword.length === "number" ? temporaryPassword.length : null,
+        passwordType: typeof temporaryPassword,
+        sameValue: temporaryPassword === validation.values.temporaryPassword,
+        over72: temporaryPassword && typeof temporaryPassword.length === "number" ? temporaryPassword.length > 72 : false
+      });
+
       var result = await global.supabaseClient.functions.invoke("create-business-client", {
         body: {
           firstName: validation.values.firstName,
