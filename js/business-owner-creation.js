@@ -506,7 +506,7 @@
           '<p><strong>Name:</strong> ' + escapeHtml(clientName) + '</p>',
           '<p><strong>Username:</strong> ' + escapeHtml(clientUsername) + '</p>',
           '<p><strong>Email:</strong> ' + escapeHtml(clientEmail) + '</p>',
-          '<p><strong>Next step:</strong> Share the login details with the client, including the temporary password, and ask them to sign in to change it.</p>'
+          '<p><strong>Next step:</strong> Give the client their email address and temporary password so they can sign in. They will be prompted to change their password after logging in.</p>'
         ].join("");
       }
 
