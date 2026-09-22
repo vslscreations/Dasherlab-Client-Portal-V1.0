@@ -269,7 +269,7 @@
           phone: validation.values.phone,
           username: validation.values.username,
           temporaryPassword: validation.values.temporaryPassword,
-          confirmTemporaryPassword: validation.values.confirmTemporaryPassword
+          confirmTemporaryPassword: validation.values.temporaryPassword
         }
       });
 

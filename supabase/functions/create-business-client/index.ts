@@ -143,11 +143,32 @@ Deno.serve(async (req: Request) => {
     const email = safeText(body?.email).toLowerCase();
     const phone = safeText(body?.phone);
     const username = normalizeUsername(safeText(body?.username));
+    const rawTemporaryPasswordValue = body && Object.prototype.hasOwnProperty.call(body, 'temporaryPassword') ? body.temporaryPassword : undefined;
     const temporaryPassword = safeText(body?.temporaryPassword);
     const confirmTemporaryPassword = safeText(body?.confirmTemporaryPassword);
 
+    console.log('[create-business-client diagnostic]', {
+      stage: 'parse-body',
+      rawTemporaryPasswordLength: typeof rawTemporaryPasswordValue === 'string' ? rawTemporaryPasswordValue.length : null,
+      rawTemporaryPasswordType: typeof rawTemporaryPasswordValue,
+      sanitizedTemporaryPasswordLength: temporaryPassword.length,
+      sanitizedTemporaryPasswordType: typeof temporaryPassword,
+      confirmTemporaryPasswordLength: confirmTemporaryPassword.length,
+      confirmTemporaryPasswordType: typeof confirmTemporaryPassword
+    });
+
+    console.log('[create-business-client trace] stage=parse-body-complete', {
+      firstNameLength: firstName.length,
+      lastNameLength: lastName.length,
+      emailLength: email.length,
+      usernameLength: username.length,
+      temporaryPasswordLength: temporaryPassword.length,
+      confirmTemporaryPasswordLength: confirmTemporaryPassword.length
+    });
+
     stage = 'validate-input';
     if (!firstName || !email) {
+      console.log('[create-business-client trace] returning-400=missing-client-name-or-email', { stage });
       return jsonResponse(400, {
         ok: false,
         message: 'Client first name and email are required.'
@@ -155,6 +176,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!isValidEmail(email)) {
+      console.log('[create-business-client trace] returning-400=invalid-email', { stage });
       return jsonResponse(400, {
         ok: false,
         message: 'Client email must be a valid email address.'
@@ -162,6 +184,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!username) {
+      console.log('[create-business-client trace] returning-400=missing-username', { stage });
       return jsonResponse(400, {
         ok: false,
         message: 'Client username is required.'
@@ -169,6 +192,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (username.length < 3) {
+      console.log('[create-business-client trace] returning-400=username-too-short', { stage });
       return jsonResponse(400, {
         ok: false,
         message: 'Client username must be at least 3 characters long.'
@@ -176,6 +200,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!temporaryPassword || temporaryPassword.length < 8) {
+      console.log('[create-business-client trace] returning-400=password-too-short', { stage });
       return jsonResponse(400, {
         ok: false,
         message: 'Temporary password must be at least 8 characters long.'
@@ -183,6 +208,10 @@ Deno.serve(async (req: Request) => {
     }
 
     if (temporaryPassword.length > 72) {
+      console.log('[create-business-client trace] returning-400=password-too-long', {
+        stage,
+        temporaryPasswordLength: temporaryPassword.length
+      });
       return jsonResponse(400, {
         ok: false,
         message: 'Temporary password must be between 8 and 72 characters long.'
@@ -190,6 +219,11 @@ Deno.serve(async (req: Request) => {
     }
 
     if (temporaryPassword !== confirmTemporaryPassword) {
+      console.log('[create-business-client trace] returning-400=password-confirmation-mismatch', {
+        stage,
+        temporaryPasswordLength: temporaryPassword.length,
+        confirmTemporaryPasswordLength: confirmTemporaryPassword.length
+      });
       return jsonResponse(400, {
         ok: false,
         message: 'Temporary password and confirmation must match.'
@@ -216,6 +250,7 @@ Deno.serve(async (req: Request) => {
       }
     });
 
+    console.log('[create-business-client trace] stage=before-owner-profile-check', { stage });
     stage = 'owner-profile';
     const ownerProfile = await getCurrentOwnerProfile(serviceRoleClient, authResult.user.id);
     if (ownerProfile.error || !ownerProfile.record) {
@@ -267,11 +302,40 @@ Deno.serve(async (req: Request) => {
     }
 
     stage = 'create-auth-user';
-    console.warn('[create-business-client] creating auth user', {
-      email,
-      business_id: ownerProfile.record.business_id,
-      name,
-      stage
+    console.warn('[create-business-client diagnostic]', {
+      stage,
+      emailLength: email.length,
+      usernameLength: username.length,
+      businessId: ownerProfile.record.business_id,
+      temporaryPasswordLength: temporaryPassword.length,
+      temporaryPasswordType: typeof temporaryPassword,
+      createUserKeys: Object.keys({
+        email,
+        password: temporaryPassword,
+        email_confirm: true,
+        user_metadata: {
+          first_name: firstName,
+          last_name: lastName,
+          username,
+          business_id: ownerProfile.record.business_id,
+          role: 'client',
+          requires_password_change: true,
+          needs_password_change: true
+        },
+        app_metadata: {
+          business_id: ownerProfile.record.business_id,
+          role: 'client',
+          requires_password_change: true,
+          needs_password_change: true
+        }
+      })
+    });
+
+    console.log('[create-business-client trace] stage=before-create-auth-user', {
+      temporaryPasswordLength: temporaryPassword.length,
+      temporaryPasswordType: typeof temporaryPassword,
+      emailLength: email.length,
+      usernameLength: username.length
     });
 
     const authUser = await serviceRoleClient.auth.admin.createUser({
@@ -295,6 +359,11 @@ Deno.serve(async (req: Request) => {
       }
     });
 
+    console.log('[create-business-client trace] stage=after-create-auth-user', {
+      authUserExists: !!authUser,
+      authUserIdPresent: !!authUser?.data?.user?.id
+    });
+
     if (authUser.error || !authUser.data?.user) {
       const errorInfo = authUser.error && typeof authUser.error === 'object' ? authUser.error : {};
       const status = typeof errorInfo.status === 'number' ? errorInfo.status : 400;
@@ -302,14 +371,20 @@ Deno.serve(async (req: Request) => {
       const errorMessage = typeof errorInfo.message === 'string' ? errorInfo.message : 'Supabase Auth account creation failed.';
       const errorName = typeof errorInfo.name === 'string' ? errorInfo.name : null;
 
-      console.warn('[create-business-client] auth user creation failed', {
+      console.log('[create-business-client trace] returning-400=auth-user-creation-failed', {
         stage,
-        email,
-        businessId: ownerProfile.record.business_id,
         status,
-        error_code: errorCode,
-        error_message: errorMessage,
-        error_name: errorName
+        errorCode
+      });
+
+      console.warn('[create-business-client diagnostic] auth user creation failed', {
+        status,
+        errorCode,
+        errorMessage,
+        errorName,
+        stage,
+        temporaryPasswordLength: temporaryPassword.length,
+        temporaryPasswordType: typeof temporaryPassword
       });
 
       return jsonResponse(status, {
@@ -358,6 +433,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    console.log('[create-business-client trace] stage=success');
     return jsonResponse(200, {
       ok: true,
       message: 'Client account created successfully.',
